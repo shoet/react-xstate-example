@@ -25,13 +25,20 @@ const stateMachine = createMachine({
   id: "counter",
   context: {
     second: 10,
+    initialSecond: 10,
   } as {
     second: number;
+    initialSecond: number;
   },
   initial: "stop",
   states: {
     stop: {
-      entry: "handleReset",
+      entry: [
+        assign({
+          second: ({ context }) => context.initialSecond,
+        }),
+        "handleReset",
+      ],
       on: {
         START: {
           target: "started",
@@ -51,9 +58,6 @@ const stateMachine = createMachine({
         },
         RESET: {
           target: "stop",
-          actions: assign({
-            second: 10,
-          }),
         },
         COMPLETE: {
           target: "complete",
@@ -68,9 +72,6 @@ const stateMachine = createMachine({
         },
         RESET: {
           target: "stop",
-          actions: assign({
-            second: 10,
-          }),
         },
       },
     },
@@ -78,9 +79,6 @@ const stateMachine = createMachine({
       on: {
         RESET: {
           target: "stop",
-          actions: assign({
-            second: 10,
-          }),
         },
       },
     },
@@ -130,7 +128,7 @@ export default function Page() {
           )}
         >
           <div>カウントダウン</div>
-          {state.context.second === 0 ? (
+          {state.matches("complete") ? (
             <div>完了</div>
           ) : (
             <div>{state.context.second}秒</div>
