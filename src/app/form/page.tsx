@@ -51,7 +51,7 @@ const machine = createMachine({
         SUBMIT: {
           target: "sending",
           guard: ({ context }) => isValidSend(context.email, context.password),
-          actions: ["handleSubmit"],
+          actions: [assign({ error: undefined }), "handleSubmit"],
         },
       },
     },
