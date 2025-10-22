@@ -71,7 +71,10 @@ const machine = createMachine({
             ({ event }) => {
               console.log("event", event);
             },
-            assign({ currentOpenedId: ({ event }) => event.id }),
+            assign({
+              currentOpenedId: ({ event, context }) =>
+                context.currentOpenedId === event.id ? undefined : event.id,
+            }),
           ],
           guard: ({ context }) => !context.animating,
           target: "animating",
@@ -121,6 +124,7 @@ export default function Page() {
               <button
                 onClick={(e) => {
                   e.preventDefault();
+                  console.log("click", a.id);
                   send({ type: "CLICK_SUMMARY", id: a.id });
                 }}
               >
@@ -128,7 +132,7 @@ export default function Page() {
               </button>
               <div
                 className={clsx(
-                  "transition-all duration-300 ease-in-out",
+                  "transition-all duration-300 ease-in-out overflow-hidden bg-blue-300", // overflow-hiddenがないと、次の要素に被さってしまう
                   isOpen ? "opacity-100" : "opacity-0 h-0",
                 )}
               >
