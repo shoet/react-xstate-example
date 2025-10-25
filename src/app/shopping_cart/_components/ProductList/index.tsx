@@ -56,7 +56,7 @@ const ProductCard = (props: {
   onClickRemove: (product: Product) => void;
   onClickSubmit: () => void;
 }) => {
-  const { product, quantity, onClickAdd, onClickRemove, onClickSubmit } = props;
+  const { product, quantity, onClickAdd, onClickRemove } = props;
   return (
     <div className={clsx("p-4 border border-gray-50 rounded-xl")}>
       <div>

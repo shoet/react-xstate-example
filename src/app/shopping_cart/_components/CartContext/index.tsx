@@ -1,6 +1,6 @@
 "use client";
 import { createContext, PropsWithChildren } from "react";
-import { useCart, type UseCartReturnType } from "./_hooks";
+import { useCart, UseCartReturnType } from "./_hooks/useCart";
 
 type CartContextType = UseCartReturnType;
 

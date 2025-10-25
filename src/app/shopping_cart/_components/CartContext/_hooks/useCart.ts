@@ -34,20 +34,22 @@ export const useCart = () => {
   };
 
   const removeItem = (product: Product) => {
-    const { [product.id]: item, ...rest } = cart;
-    if (!item) {
-      return;
-    }
-    if (item.quantity === 1) {
-      setCart({ ...rest });
-      return;
-    }
-    setCart({
-      ...rest,
-      [item.product.id]: {
-        product: item.product,
-        quantity: item.quantity - 1,
-      },
+    setCart((prev) => {
+      const item = prev[product.id];
+      if (!item) {
+        return prev;
+      }
+      if (item.quantity === 1) {
+        const { [product.id]: _, ...rest } = prev;
+        return rest;
+      }
+      return {
+        ...prev,
+        [item.product.id]: {
+          product: item.product,
+          quantity: item.quantity - 1,
+        },
+      };
     });
   };
 
