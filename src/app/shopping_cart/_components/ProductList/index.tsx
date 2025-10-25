@@ -68,17 +68,6 @@ const ProductCard = (props: {
         <div>{quantity}</div>
         <button onClick={() => onClickAdd(product)}>+</button>
       </div>
-      <button
-        disabled={quantity === 0}
-        onClick={() => {
-          if (quantity === 0) {
-            return;
-          }
-          onClickSubmit();
-        }}
-      >
-        カートに追加
-      </button>
     </div>
   );
 };
