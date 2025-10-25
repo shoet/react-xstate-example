@@ -56,7 +56,7 @@ export const useCart = () => {
 
   const submit = async () => {
     try {
-      await submitCart();
+      await submitCart(cart);
       setCart({});
     } catch (error) {
       console.error("Failed to submit cart:", error);

@@ -7,7 +7,7 @@ import { useCartContext } from "../../_hooks/useCartContext";
 export const ProductsContainer = (props: {
   productsPromise: Promise<Product[]>;
 }) => {
-  const { cart, addItem, removeItem, submit } = useCartContext();
+  const { cart, addItem, removeItem } = useCartContext();
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <ProductList
@@ -15,7 +15,6 @@ export const ProductsContainer = (props: {
         productsPromise={props.productsPromise}
         onAddCartAction={addItem}
         onRemoveCartAction={removeItem}
-        onSubmitAction={submit}
       />
     </Suspense>
   );
@@ -26,7 +25,6 @@ export const ProductList = (props: {
   productsPromise: Promise<Product[]>;
   onAddCartAction: (product: Product) => void;
   onRemoveCartAction: (product: Product) => void;
-  onSubmitAction: () => void;
 }) => {
   const products = use(props.productsPromise);
   return (
@@ -40,7 +38,6 @@ export const ProductList = (props: {
               quantity={quantity}
               onClickAdd={props.onAddCartAction}
               onClickRemove={props.onRemoveCartAction}
-              onClickSubmit={props.onSubmitAction}
             />
           </li>
         );
@@ -54,7 +51,6 @@ const ProductCard = (props: {
   quantity: number;
   onClickAdd: (product: Product) => void;
   onClickRemove: (product: Product) => void;
-  onClickSubmit: () => void;
 }) => {
   const { product, quantity, onClickAdd, onClickRemove } = props;
   return (
