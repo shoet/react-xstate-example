@@ -11,6 +11,7 @@ export type UseCartReturnType = {
 
 export const useCart = () => {
   const [cart, setCart] = useState<Cart>({});
+  const [error, setError] = useState<Error | null>(null);
 
   const addItem = (product: Product) => {
     const item = cart[product.id];
@@ -59,6 +60,8 @@ export const useCart = () => {
       setCart({});
     } catch (error) {
       console.error("Failed to submit cart:", error);
+      setError(error as Error);
+      throw error;
     }
   };
 
