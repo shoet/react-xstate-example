@@ -73,7 +73,7 @@ const stateMachine = createMachine({
               };
             },
             onDone: {
-              target: "payment",
+              target: "inputPayment",
               actions: assign({
                 addressId: ({ event }) => event.output.addressId,
               }),
@@ -136,6 +136,13 @@ export type UseCartXStateReturnType = {
     address2: string,
     postalCode: string,
     phoneNumber: string,
+  ) => Promise<void>;
+  submitPaymentMethod: (
+    cardNumber: string,
+    cardHolder: string,
+    expiryYear: string,
+    expiryMonth: string,
+    securityCode: string,
   ) => Promise<void>;
 };
 
@@ -202,6 +209,13 @@ export const useCartXState = () => {
       phoneNumber,
     });
   };
+  const submitPaymentMethod = async (
+    cardNumber: string,
+    cardHolder: string,
+    expiryYear: string,
+    expiryMonth: string,
+    securityCode: string,
+  ) => {};
 
   return {
     cart,
@@ -210,5 +224,6 @@ export const useCartXState = () => {
     submit,
     state,
     submitAddress,
+    submitPaymentMethod,
   };
 };
