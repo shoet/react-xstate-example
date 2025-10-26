@@ -14,5 +14,5 @@ export const Payment = () => {
     return <AddressForm onSubmit={submitAddress} />;
   }
 
-  return null;
+  return <div>{JSON.stringify({ context: state.context })}</div>;
 };

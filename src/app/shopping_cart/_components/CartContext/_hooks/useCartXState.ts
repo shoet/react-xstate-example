@@ -2,128 +2,126 @@
 
 import { Cart, Product } from "@/features/shopping_cart/types";
 import { useMachine } from "@xstate/react";
-import { createMachine, fromPromise, MachineSnapshot, StateFrom } from "xstate";
+import {
+  assign,
+  createMachine,
+  fromPromise,
+  MachineSnapshot,
+  StateFrom,
+} from "xstate";
 import { useCart } from "./useCart";
+import { registerAddress } from "@/features/shopping_cart/service/registerAddress";
 
 type StateMachineContext = {
-  address: {
-    address1: string;
-    address2: string;
-    postalCode: string;
-    phoneNumber: string;
-  };
+  addressId: string;
   paymentInfo: {
     paymentMethodId: string;
   };
 };
 
-const stateMachine = createMachine(
-  {
-    id: "cart",
-    initial: "browsing",
-    always: [
-      {
-        actions: [
-          ({ context }) => {
-            console.log({ context });
-          },
-          "saveSnapshot",
-        ],
-      },
-    ],
-    context: {},
-    states: {
-      // 商品閲覧・カート編集中
-      browsing: {
-        on: {
-          ADD_ITEM: {
-            actions: "handleAddCartItem",
-          },
-          REMOVE_ITEM: {
-            actions: "handleRemoveCartItem",
-          },
-          PURCHASE: {
-            target: "checkout",
-          },
+const stateMachine = createMachine({
+  id: "cart",
+  initial: "browsing",
+  always: [
+    {
+      actions: [
+        ({ context }) => {
+          console.log({ context });
         },
-      },
-      // 決済工程
-      checkout: {
-        initial: "inputAddress",
-        states: {
-          // 住所入力
-          inputAddress: {
-            on: {
-              SUBMIT: {
-                target: "registerAddress",
-              },
-            },
-          },
-          // 住所登録
-          registerAddress: {
-            invoke: {
-              src: "",
-              input: ({ event }) => {
-                return {
-                  address1: event.address1,
-                  address2: event.address2,
-                  postalCode: event.postalCode,
-                  phoneNumber: event.phoneNumber,
-                };
-              },
-              onDone: {
-                target: "payment",
-              },
-              onError: {
-                target: "registerAddress",
-              },
-            },
-          },
-          // 支払い入力
-          inputPayment: {},
-          // 決済会社登録
-          // 支払い方法登録
-          payment: {
-            on: {
-              ON_CHANGE: {},
-              SUBMIT: {
-                target: "confirm",
-              },
-            },
-          },
-          // 支払い確認
-          confirm: {
-            on: {
-              ON_CHANGE: {},
-              SUBMIT: {
-                target: "processing",
-              },
-            },
-          },
-          // 決済処理
-          processing: {
-            invoke: {
-              src: "handleSubmitCart",
-              onDone: {
-                target: "success",
-              },
-              onError: {
-                target: "error",
-              },
-            },
-          },
-          success: {}, // 成功
-          error: {}, // エラー
+        "saveSnapshot",
+      ],
+    },
+  ],
+  context: {} as StateMachineContext,
+  states: {
+    // 商品閲覧・カート編集中
+    browsing: {
+      on: {
+        ADD_ITEM: {
+          actions: "handleAddCartItem",
+        },
+        REMOVE_ITEM: {
+          actions: "handleRemoveCartItem",
+        },
+        PURCHASE: {
+          target: "checkout",
         },
       },
     },
-  },
-  {
-    actors: {
-      registerAddress: fromPromise(async ({ input }) => {}),
+    // 決済工程
+    checkout: {
+      initial: "inputAddress",
+      states: {
+        // 住所入力
+        inputAddress: {
+          on: {
+            SUBMIT_ADDRESS: {
+              target: "registerAddress",
+            },
+          },
+        },
+        // 住所登録
+        registerAddress: {
+          invoke: {
+            src: "handleRegisterAddress",
+            input: ({ event }) => {
+              return {
+                address1: event.address1,
+                address2: event.address2,
+                postalCode: event.postalCode,
+                phoneNumber: event.phoneNumber,
+              };
+            },
+            onDone: {
+              target: "payment",
+              actions: assign({
+                addressId: ({ event }) => event.output.addressId,
+              }),
+            },
+            onError: {
+              target: "registerAddress",
+            },
+          },
+        },
+        // 支払い入力
+        inputPayment: {},
+        // 決済会社登録
+        // 支払い方法登録
+        payment: {
+          on: {
+            ON_CHANGE: {},
+            SUBMIT: {
+              target: "confirm",
+            },
+          },
+        },
+        // 支払い確認
+        confirm: {
+          on: {
+            ON_CHANGE: {},
+            SUBMIT: {
+              target: "processing",
+            },
+          },
+        },
+        // 決済処理
+        processing: {
+          invoke: {
+            src: "handleSubmitCart",
+            onDone: {
+              target: "success",
+            },
+            onError: {
+              target: "error",
+            },
+          },
+        },
+        success: {}, // 成功
+        error: {}, // エラー
+      },
     },
   },
-);
+});
 
 export type XCartState = StateFrom<typeof stateMachine>;
 
@@ -166,6 +164,19 @@ export const useCartXState = () => {
           console.log(JSON.stringify(json));
         },
       },
+      actors: {
+        handleRegisterAddress: fromPromise(async ({ input }) => {
+          const addressId = await registerAddress(
+            input.address1,
+            input.address2,
+            input.postalCode,
+            input.phoneNumber,
+          );
+          return {
+            addressId: addressId,
+          };
+        }),
+      },
     }),
   );
   const addItem = (product: Product) => {
@@ -182,7 +193,15 @@ export const useCartXState = () => {
     address2: string,
     postalCode: string,
     phoneNumber: string,
-  ) => {};
+  ) => {
+    send({
+      type: "SUBMIT_ADDRESS",
+      address1,
+      address2,
+      postalCode,
+      phoneNumber,
+    });
+  };
 
   return {
     cart,
