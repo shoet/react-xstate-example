@@ -8,6 +8,7 @@ import { registerAddress } from "@/features/shopping_cart/service/registerAddres
 import { registerPaymentMethod } from "@/features/shopping_cart/service/registerPaymentMethod";
 
 type StateMachineContext = {
+  cartSessionId: string | undefined;
   addressId: string | undefined;
   confirmCardRedirectURL: string | undefined;
   paymentMethodId: string | undefined;
@@ -39,6 +40,9 @@ const stateMachine = createMachine({
         },
         PURCHASE: {
           target: "checkout",
+          actions: assign({
+            cartSessionId: ({ event }) => event.cartSessionId,
+          }),
         },
       },
     },
@@ -114,24 +118,14 @@ const stateMachine = createMachine({
         paymentConfirmRegister: {
           on: {
             NEXT_PAYMENT: {
-              target: "payment",
+              target: "orderConfirm",
             },
           },
         },
         // 決済会社登録
         // 支払い方法登録
-        payment: {
+        orderConfirm: {
           on: {
-            ON_CHANGE: {},
-            SUBMIT: {
-              target: "confirm",
-            },
-          },
-        },
-        // 支払い確認
-        confirm: {
-          on: {
-            ON_CHANGE: {},
             SUBMIT: {
               target: "processing",
             },
@@ -141,6 +135,13 @@ const stateMachine = createMachine({
         processing: {
           invoke: {
             src: "handleSubmitCart",
+            input: ({ event, context }) => {
+              return {
+                paymentMethodId: context.paymentMethodId,
+                addressId: context.addressId,
+                cartSessionId: "",
+              };
+            },
             onDone: {
               target: "success",
             },
@@ -160,9 +161,10 @@ export type XCartState = StateFrom<typeof stateMachine>;
 
 export type UseCartXStateReturnType = {
   cart: Cart;
+  cartSessionId: string | undefined;
   addItem: (product: Product) => void;
   removeItem: (product: Product) => void;
-  submit: () => Promise<void>;
+  submit: (cartSessionId: string) => Promise<void>;
   state: XCartState;
   submitAddress: (
     address1: string,
@@ -186,6 +188,7 @@ export const useCartXState = () => {
     removeItem: remove,
     submit: submitCart,
     cart,
+    cartSessionId,
   } = useCart();
   const [state, send, actor] = useMachine(
     stateMachine.provide({
@@ -239,8 +242,8 @@ export const useCartXState = () => {
   const removeItem = (product: Product) => {
     send({ type: "REMOVE_ITEM", product: product });
   };
-  const submit = async () => {
-    send({ type: "PURCHASE" });
+  const submit = async (cartSessionId: string) => {
+    send({ type: "PURCHASE", cartSessionId });
   };
   const submitAddress = async (
     address1: string,
@@ -280,6 +283,7 @@ export const useCartXState = () => {
 
   return {
     cart,
+    cartSessionId,
     addItem,
     removeItem,
     submit,

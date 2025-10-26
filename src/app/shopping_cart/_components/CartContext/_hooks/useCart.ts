@@ -1,17 +1,23 @@
 import { submitCart } from "@/features/shopping_cart/service/submitCart";
 import { Cart, Product } from "@/features/shopping_cart/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export type UseCartReturnType = {
   cart: Cart;
+  cartSessionId: string;
   addItem: (product: Product) => void;
   removeItem: (product: Product) => void;
   submit: () => Promise<void>;
 };
 
 export const useCart = () => {
+  const [cartSessionId, setCartSessionId] = useState<string | undefined>();
   const [cart, setCart] = useState<Cart>({});
   const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    setCartSessionId(crypto.randomUUID());
+  }, []);
 
   const addItem = (product: Product) => {
     const item = cart[product.id];
@@ -67,6 +73,7 @@ export const useCart = () => {
 
   return {
     cart,
+    cartSessionId,
     addItem,
     removeItem,
     submit,

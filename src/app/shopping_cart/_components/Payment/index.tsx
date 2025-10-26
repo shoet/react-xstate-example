@@ -3,12 +3,18 @@
 import { useCartContext } from "../../_hooks/useCartContext";
 import { AddressForm } from "../AddressForm";
 import { Cart } from "../Cart";
+import { OrderConfirm } from "../OrderConfirm";
 import { PaymentConfirm } from "../PaymentConfirm";
 import { PaymentForm } from "../PaymentForm";
 
 export const Payment = () => {
-  const { state, submitAddress, submitPaymentMethod, goNextPaymentConfirm } =
-    useCartContext();
+  const {
+    state,
+    submitAddress,
+    submitPaymentMethod,
+    goNextPaymentConfirm,
+    cart,
+  } = useCartContext();
 
   if (state.matches("browsing")) {
     return <Cart />;
@@ -26,6 +32,9 @@ export const Payment = () => {
         onNext={goNextPaymentConfirm}
       />
     );
+  }
+  if (state.matches("checkout.orderConfirm")) {
+    return <OrderConfirm cart={cart} onSubmit={() => {}} />;
   }
   return <div>{JSON.stringify({ context: state.context })}</div>;
 };

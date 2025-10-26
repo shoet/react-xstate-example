@@ -5,7 +5,7 @@ import { useCartContext } from "../../_hooks/useCartContext";
 import { useMemo } from "react";
 
 export const Cart = () => {
-  const { cart, submit } = useCartContext();
+  const { cart, submit, cartSessionId } = useCartContext();
   const cartItem = useMemo(() => {
     return Object.values(cart);
   }, [cart]);
@@ -18,7 +18,11 @@ export const Cart = () => {
     <form
       onSubmit={async (e) => {
         e.preventDefault();
-        await submit();
+        if (!cartSessionId) {
+          console.error("cart session id not found");
+          throw new Error("cart session id not found");
+        }
+        await submit(cartSessionId);
       }}
       className={clsx("p-4 border border-gray-200 rounded-xl")}
     >

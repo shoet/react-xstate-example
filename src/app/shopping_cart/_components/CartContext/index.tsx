@@ -10,9 +10,10 @@ type CartContextType = UseCartXStateReturnType;
 
 export const CartContext = createContext<CartContextType>({
   cart: {},
+  cartSessionId: undefined,
   addItem: () => {},
   removeItem: () => {},
-  submit: async () => {},
+  submit: async (cartSessionId: string) => {},
   state: {} as XCartState,
   submitAddress: async () => {},
   submitPaymentMethod: async () => {},
@@ -22,6 +23,7 @@ export const CartContext = createContext<CartContextType>({
 export const CartContextProvider = (props: PropsWithChildren) => {
   const {
     cart,
+    cartSessionId,
     submit,
     addItem,
     removeItem,
@@ -34,6 +36,7 @@ export const CartContextProvider = (props: PropsWithChildren) => {
     <CartContext
       value={{
         cart,
+        cartSessionId,
         addItem,
         removeItem,
         submit,
