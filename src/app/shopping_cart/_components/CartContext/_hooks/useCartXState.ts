@@ -126,7 +126,7 @@ const stateMachine = createMachine({
         // 支払い方法登録
         orderConfirm: {
           on: {
-            SUBMIT: {
+            SUBMIT_PAYMENT: {
               target: "processing",
             },
           },
@@ -135,11 +135,11 @@ const stateMachine = createMachine({
         processing: {
           invoke: {
             src: "handleSubmitCart",
-            input: ({ event, context }) => {
+            input: ({ context }) => {
               return {
                 paymentMethodId: context.paymentMethodId,
                 addressId: context.addressId,
-                cartSessionId: "",
+                cartSessionId: context.cartSessionId,
               };
             },
             onDone: {
@@ -150,8 +150,12 @@ const stateMachine = createMachine({
             },
           },
         },
-        success: {}, // 成功
-        error: {}, // エラー
+        // 成功
+        success: {},
+        // エラー
+        error: {
+          target: "orderConfirm",
+        },
       },
     },
   },
@@ -180,6 +184,7 @@ export type UseCartXStateReturnType = {
     securityCode: string,
   ) => Promise<void>;
   goNextPaymentConfirm: () => void;
+  submitPayment: () => Promise<void>;
 };
 
 export const useCartXState = () => {
@@ -198,9 +203,6 @@ export const useCartXState = () => {
         },
         handleRemoveCartItem: ({ event }) => {
           remove(event.product);
-        },
-        handleSubmitCart: async () => {
-          await submitCart();
         },
         saveSnapshot: ({ self }) => {
           const snapshot = self.getSnapshot();
@@ -232,6 +234,14 @@ export const useCartXState = () => {
             redirectURL: redirectURL,
             paymentMethodId: paymentMethodId,
           };
+        }),
+        handleSubmitCart: fromPromise(async ({ input }) => {
+          console.log("input", {
+            addressId: input.addressId,
+            paymentMethodId: input.paymentMethodId,
+            cartSessionId: input.cartSessionId,
+          });
+          await submitCart();
         }),
       },
     }),
@@ -280,6 +290,11 @@ export const useCartXState = () => {
       type: "NEXT_PAYMENT",
     });
   };
+  const submitPayment = async () => {
+    send({
+      type: "SUBMIT_PAYMENT",
+    });
+  };
 
   return {
     cart,
@@ -291,5 +306,6 @@ export const useCartXState = () => {
     submitAddress,
     submitPaymentMethod,
     goNextPaymentConfirm,
+    submitPayment,
   };
 };
