@@ -45,6 +45,7 @@ export const AddressForm = (props: {
       }}
       className={clsx("border border-border px-6 py-4 rounded-xl")}
     >
+      <div className={clsx("font-bold text-lg w-full", "mb-8")}>住所の入力</div>
       <div className={clsx("flex flex-col gap-4")}>
         <InputWithLabel label="郵便番号" {...register("postalCode")} />
         <InputWithLabel label="住所1" {...register("address1")} />

@@ -20,8 +20,10 @@ export const Cart = () => {
         e.preventDefault();
         await submit();
       }}
+      className={clsx("p-4 border border-gray-200 rounded-xl")}
     >
-      <div className={clsx("p-4 border border-gray-200 rounded-xl")}>
+      <div className={clsx("font-bold text-lg w-full")}>カート</div>
+      <div>
         {cartItem.length === 0 ? (
           <div>カートは空です</div>
         ) : (

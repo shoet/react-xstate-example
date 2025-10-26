@@ -2,7 +2,7 @@ import { getProducts } from "@/features/shopping_cart/service/getProducts";
 import { ProductsContainer } from "./_components/ProductList";
 import clsx from "clsx";
 import { CartContextProvider } from "./_components/CartContext";
-import { Cart } from "./_components/Cart";
+import { Payment } from "./_components/Payment";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +15,7 @@ export default function Page() {
           <ProductsContainer productsPromise={getProducts()} />
         </div>
         <div>
-          <div>カートの中身</div>
-          <Cart />
+          <Payment />
         </div>
       </div>
     </CartContextProvider>

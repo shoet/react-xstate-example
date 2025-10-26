@@ -1,18 +1,25 @@
 "use client";
 import { createContext, PropsWithChildren } from "react";
-import { useCart, UseCartReturnType } from "./_hooks/useCart";
+import {
+  useCartXState,
+  UseCartXStateReturnType,
+  XCartState,
+} from "./_hooks/useCartXState";
 
-type CartContextType = UseCartReturnType;
+type CartContextType = UseCartXStateReturnType;
 
 export const CartContext = createContext<CartContextType>({
   cart: {},
   addItem: () => {},
   removeItem: () => {},
   submit: async () => {},
+  state: {} as XCartState,
+  submitAddress: async () => {},
 });
 
 export const CartContextProvider = (props: PropsWithChildren) => {
-  const { cart, submit, addItem, removeItem } = useCart();
+  const { cart, submit, addItem, removeItem, state, submitAddress } =
+    useCartXState();
   return (
     <CartContext
       value={{
@@ -20,6 +27,8 @@ export const CartContextProvider = (props: PropsWithChildren) => {
         addItem,
         removeItem,
         submit,
+        state,
+        submitAddress,
       }}
     >
       {props.children}
