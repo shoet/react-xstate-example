@@ -15,11 +15,21 @@ export const CartContext = createContext<CartContextType>({
   submit: async () => {},
   state: {} as XCartState,
   submitAddress: async () => {},
+  submitPaymentMethod: async () => {},
+  goNextPaymentConfirm: () => {},
 });
 
 export const CartContextProvider = (props: PropsWithChildren) => {
-  const { cart, submit, addItem, removeItem, state, submitAddress } =
-    useCartXState();
+  const {
+    cart,
+    submit,
+    addItem,
+    removeItem,
+    state,
+    submitAddress,
+    submitPaymentMethod,
+    goNextPaymentConfirm,
+  } = useCartXState();
   return (
     <CartContext
       value={{
@@ -29,6 +39,8 @@ export const CartContextProvider = (props: PropsWithChildren) => {
         submit,
         state,
         submitAddress,
+        submitPaymentMethod,
+        goNextPaymentConfirm,
       }}
     >
       {props.children}

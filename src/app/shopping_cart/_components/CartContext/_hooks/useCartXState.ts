@@ -2,21 +2,15 @@
 
 import { Cart, Product } from "@/features/shopping_cart/types";
 import { useMachine } from "@xstate/react";
-import {
-  assign,
-  createMachine,
-  fromPromise,
-  MachineSnapshot,
-  StateFrom,
-} from "xstate";
+import { assign, createMachine, fromPromise, StateFrom } from "xstate";
 import { useCart } from "./useCart";
 import { registerAddress } from "@/features/shopping_cart/service/registerAddress";
+import { registerPaymentMethod } from "@/features/shopping_cart/service/registerPaymentMethod";
 
 type StateMachineContext = {
-  addressId: string;
-  paymentInfo: {
-    paymentMethodId: string;
-  };
+  addressId: string | undefined;
+  confirmCardRedirectURL: string | undefined;
+  paymentMethodId: string | undefined;
 };
 
 const stateMachine = createMachine({
@@ -84,7 +78,46 @@ const stateMachine = createMachine({
           },
         },
         // 支払い入力
-        inputPayment: {},
+        inputPayment: {
+          on: {
+            START_REGISTER: {
+              target: "paymentStartRegister",
+            },
+          },
+        },
+        // カード登録開始
+        paymentStartRegister: {
+          invoke: {
+            src: "handleRegisterPaymentMethod",
+            input: ({ event }) => {
+              return {
+                cardNumber: event.cardNumber,
+                expiryYear: event.expiryYear,
+                expiryMonth: event.expiryMonth,
+                cardHolder: event.cardHolder,
+                securityCode: event.securityCode,
+              };
+            },
+            onDone: {
+              target: "paymentConfirmRegister",
+              actions: assign({
+                confirmCardRedirectURL: ({ event }) => event.output.redirectURL,
+                paymentMethodId: ({ event }) => event.output.paymentMethodId,
+              }),
+            },
+            onError: {
+              target: "inputPayment",
+            },
+          },
+        },
+        // カード会社確認待ち
+        paymentConfirmRegister: {
+          on: {
+            NEXT_PAYMENT: {
+              target: "payment",
+            },
+          },
+        },
         // 決済会社登録
         // 支払い方法登録
         payment: {
@@ -144,6 +177,7 @@ export type UseCartXStateReturnType = {
     expiryMonth: string,
     securityCode: string,
   ) => Promise<void>;
+  goNextPaymentConfirm: () => void;
 };
 
 export const useCartXState = () => {
@@ -183,6 +217,19 @@ export const useCartXState = () => {
             addressId: addressId,
           };
         }),
+        handleRegisterPaymentMethod: fromPromise(async ({ input }) => {
+          const { redirectURL, paymentMethodId } = await registerPaymentMethod(
+            input.cardNumber,
+            input.expiryYear,
+            input.expiryMonth,
+            input.cardHolder,
+            input.securityCode,
+          );
+          return {
+            redirectURL: redirectURL,
+            paymentMethodId: paymentMethodId,
+          };
+        }),
       },
     }),
   );
@@ -215,7 +262,21 @@ export const useCartXState = () => {
     expiryYear: string,
     expiryMonth: string,
     securityCode: string,
-  ) => {};
+  ) => {
+    send({
+      type: "START_REGISTER",
+      cardNumber,
+      expiryYear,
+      expiryMonth,
+      cardHolder,
+      securityCode,
+    });
+  };
+  const goNextPaymentConfirm = async () => {
+    send({
+      type: "NEXT_PAYMENT",
+    });
+  };
 
   return {
     cart,
@@ -225,5 +286,6 @@ export const useCartXState = () => {
     state,
     submitAddress,
     submitPaymentMethod,
+    goNextPaymentConfirm,
   };
 };

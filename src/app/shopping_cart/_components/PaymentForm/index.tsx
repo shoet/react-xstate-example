@@ -13,7 +13,6 @@ type Props = {
 };
 
 export const PaymentForm = (props: Props) => {
-  const { onSubmit } = props;
   const { register, getValues } = useForm<{
     cardNumber: string;
     cardHolder: string;
@@ -26,7 +25,7 @@ export const PaymentForm = (props: Props) => {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit(
+        props.onSubmit(
           getValues("cardNumber"),
           getValues("cardHolder"),
           getValues("expiryYear"),
